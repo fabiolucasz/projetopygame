@@ -10,79 +10,55 @@ pygame.mixer.music.play(-1)
 
 barulho_da_colisao = pygame.mixer.Sound('coin.wav')
 
-# Cobra Verde (Jogador 1)
-x_cobra = 0
+
 y_cobra = 0
-x_controle = 10
+x_cobra = 0
+
+velocidade = 10
+x_controle = velocidade
 y_controle = 0
-lista_cobra = []
-tamanho_inicial = 5
-pontos = 0
 
-# Cobra Azul (Jogador 2)
-x_cobra2 = 100
-y_cobra2 = 0
-x2_controle = 10
-y2_controle = 0
-lista_cobra2 = []
-tamanho2_inicial = 5
-pontos2 = 0
-
-# Geral
 x_maca = randint(40,600)
 y_maca = randint(50,430)
+
+pontos = 0
 placar = pygame.font.Font(None, 36)
 game_over = False
 altura_tela = 480
 largura_tela = 640
 
 relogio = pygame.time.Clock()
-tela = pygame.display.set_mode((largura_tela, altura_tela))
-pygame.display.set_caption("Snake Attak - 2 Jogadores")
+tela = pygame.display.set_mode((640,480))
+pygame.display.set_caption("Snake Attak")
 
-def aumenta_cobra(lista, cor):
-    for XeY in lista:
-        pygame.draw.rect(tela, cor, (XeY[0], XeY[1], 20, 20))
+lista_cobra = []
+tamanho_inicial = 5
+def aumenta_cobra(lista_cobra):
+    for XeY in lista_cobra:
+        #XeY = [x,y]
+        #XeY[0] = x
+        #XeY[1] = y
+        pygame.draw.rect(tela, (0,200,0), (XeY[0],XeY[1], 20,20))
 
 def restart_game():
-    global x_cobra, y_cobra, x_controle, y_controle, lista_cobra, tamanho_inicial, pontos
-    global x_cobra2, y_cobra2, x2_controle, y2_controle, lista_cobra2, tamanho2_inicial, pontos2
-    global x_maca, y_maca, game_over
-
-    # Jogador 1
+    global x_cobra, y_cobra, pontos, tamanho_inicial, lista_cobra, game_over
+    game_over = False
     x_cobra = 0
     y_cobra = 0
-    x_controle = 10
-    y_controle = 0
-    lista_cobra = []
-    tamanho_inicial = 5
     pontos = 0
+    tamanho_inicial = 5
+    lista_cobra = []
 
-    # Jogador 2
-    x_cobra2 = 100
-    y_cobra2 = 0
-    x2_controle = 10
-    y2_controle = 0
-    lista_cobra2 = []
-    tamanho2_inicial = 5
-    pontos2 = 0
-
-    # Comum
-    x_maca = randint(40,600)
-    y_maca = randint(50,430)
-    game_over = False
 
 while True:
     relogio.tick(30)
     tela.fill((0,0,0))
-    
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
-
         if event.type == KEYDOWN:
-            # Jogador 1 - Teclas WASD
+          
             if event.key == K_a and x_controle != 10:
                 x_controle = -10
                 y_controle = 0
@@ -96,93 +72,62 @@ while True:
                 x_controle = 0
                 y_controle = 10
 
-            # Jogador 2 - Teclas SETAS
-            if event.key == K_LEFT and x2_controle != 10:
-                x2_controle = -10
-                y2_controle = 0
-            if event.key == K_RIGHT and x2_controle != -10:
-                x2_controle = 10
-                y2_controle = 0
-            if event.key == K_UP and y2_controle != 10:
-                x2_controle = 0
-                y2_controle = -10
-            if event.key == K_DOWN and y2_controle != -10:
-                x2_controle = 0
-                y2_controle = 10
+            
+    x_cobra = x_cobra + x_controle
+    y_cobra = y_cobra + y_controle
+    if x_cobra > largura_tela:
+        x_cobra = 0
+    if x_cobra < 0:
+        x_cobra = largura_tela
+    if y_cobra > altura_tela:
+        y_cobra = 0
+    if y_cobra < 0:
+        y_cobra = altura_tela
 
-            # Reiniciar jogo
-            if event.key == K_r:
-                restart_game()
 
-    # Movimento Jogador 1
-    x_cobra += x_controle
-    y_cobra += y_controle
 
-    # Movimento Jogador 2
-    x_cobra2 += x2_controle
-    y_cobra2 += y2_controle
+    cobra = pygame.draw.rect(tela, (0,255,0), (x_cobra,y_cobra,20,20))
+    maca = pygame.draw.rect(tela, (255,0,0), (x_maca,y_maca,20,20))
 
-    # Tela circular (atravessa e volta)
-    x_cobra %= largura_tela
-    y_cobra %= altura_tela
-    x_cobra2 %= largura_tela
-    y_cobra2 %= altura_tela
+    texto = placar.render("Pontos: " + str(pontos), True, (255,255,255))
+    tela.blit(texto, (10, 10))
 
-    # Desenha maçã
-    maca = pygame.draw.rect(tela, (255,0,0), (x_maca, y_maca, 20, 20))
-
-    # Verifica colisão J1
-    cobra = pygame.draw.rect(tela, (0,255,0), (x_cobra, y_cobra, 20, 20))
     if cobra.colliderect(maca):
+        print("colidiu")
         x_maca = randint(40,600)
         y_maca = randint(50,430)
+        #pontos = pontos + 1
         pontos += 1
+        barulho_da_colisao.play()
         tamanho_inicial += 1
-        barulho_da_colisao.play()
+    
+    
 
-    # Verifica colisão J2
-    cobra2 = pygame.draw.rect(tela, (0,0,255), (x_cobra2, y_cobra2, 20, 20))
-    if cobra2.colliderect(maca):
-        x_maca = randint(40,600)
-        y_maca = randint(50,430)
-        pontos2 += 1
-        tamanho2_inicial += 1
-        barulho_da_colisao.play()
+    lista_cabeca = []
+    lista_cabeca.append(x_cobra)
+    lista_cabeca.append(y_cobra)
+    
+    lista_cobra.append(lista_cabeca)
 
-    # Atualiza corpo da cobra verde (J1)
-    cabeca = [x_cobra, y_cobra]
-    lista_cobra.append(cabeca)
+    if lista_cobra.count(lista_cabeca) > 1:
+        game_over = True
+        while game_over:
+            tela.fill((0,0,0))
+            game_over_texto = placar.render("Game Over! ", True, (255,0,0))
+            game_over_subtitulo = placar.render("Pressione R para reiniciar", True, (255,255,255))
+
+            tela.blit(game_over_texto, (largura_tela // 2 - 100, altura_tela // 2 - 20))
+            tela.blit(game_over_subtitulo, (largura_tela // 2 - 150, altura_tela // 2 + 20))
+            pygame.display.update()
+
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_r:
+                        restart_game()
+
     if len(lista_cobra) > tamanho_inicial:
         del lista_cobra[0]
 
-    # Atualiza corpo da cobra azul (J2)
-    cabeca2 = [x_cobra2, y_cobra2]
-    lista_cobra2.append(cabeca2)
-    if len(lista_cobra2) > tamanho2_inicial:
-        del lista_cobra2[0]
-
-    # Verifica colisão consigo mesmo (J1)
-    if lista_cobra.count(cabeca) > 1 or lista_cobra2.count(cabeca2) > 1:
-        game_over = True
-
-    if game_over:
-        while game_over:
-            tela.fill((0,0,0))
-            texto1 = placar.render("Game Over!", True, (255,0,0))
-            texto2 = placar.render("Pressione R para reiniciar", True, (255,255,255))
-            tela.blit(texto1, (largura_tela // 2 - 100, altura_tela // 2 - 20))
-            tela.blit(texto2, (largura_tela // 2 - 150, altura_tela // 2 + 20))
-            pygame.display.update()
-            for event in pygame.event.get():
-                if event.type == KEYDOWN and event.key == K_r:
-                    restart_game()
-
-    # Desenha as cobras
-    aumenta_cobra(lista_cobra, (0,255,0))  # verde
-    aumenta_cobra(lista_cobra2, (0,0,255))  # azul
-
-    # Placar
-    texto_pontos = placar.render(f"Verde: {pontos}   Azul: {pontos2}", True, (255,255,255))
-    tela.blit(texto_pontos, (10,10))
+    aumenta_cobra(lista_cobra)
 
     pygame.display.update()
